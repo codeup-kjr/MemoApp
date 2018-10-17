@@ -1,4 +1,5 @@
 const pkg = require('./package')
+const firebaseKey = require('./firebase.key.json');
 
 module.exports = {
   mode: 'spa',
@@ -14,7 +15,8 @@ module.exports = {
       { hid: 'description', name: 'description', content: pkg.description }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+      { rel: 'stylesheet', href: 'https://use.fontawesome.com/releases/v5.2.0/css/all.css' }
     ]
   },
 
@@ -29,6 +31,10 @@ module.exports = {
   css: [
   ],
 
+  env: {
+    FIREBASE_KEY: JSON.stringify(firebaseKey),
+  },
+
   /*
   ** Plugins to load before mounting the App
   */
@@ -40,7 +46,8 @@ module.exports = {
   */
   modules: [
     // Doc: https://github.com/nuxt-community/axios-module#usage
-    '@nuxtjs/axios'
+    '@nuxtjs/axios',
+    'bootstrap-vue/nuxt',
   ],
   /*
   ** Axios module configuration
@@ -56,6 +63,8 @@ module.exports = {
     /*
     ** You can extend webpack config here
     */
+    
+    vendor: ['firebase', '~/components/newRoom'],
     extend(config, ctx) {
       
     }

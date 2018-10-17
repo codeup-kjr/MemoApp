@@ -1,95 +1,114 @@
 <template>
-  <!-- handlerから外れてもドラッグを止められるように
-    mouseupもcontainerに当てることにした -->
-  <div
-    class="container"
-    @mousemove="onMove"
-    @mouseup="dragEnd"
-  >
+    <!-- <div class="container"> -->
+    <b-jumbotron 
+            :fluid="true"
+            text-variant="white"
+            bg-variant="transparent"
+            >
+        <div class="background">
+            <div class="title">
+                <i class="fas fa-quote-right logo"/><span class="title-text">Memo App</span>
+            </div>
+        <newRoom class="input"/>
+        </div>
+    </b-jumbotron>
+    <!-- </div> -->
 
-    <!-- 属性名dataで連想配列ごと渡すことにした -->
-    <!-- @start="dragStart($event, data)"のように連想配列ごと渡す方式では移動できないので注意 -->
-    <!-- $eventは子コンポーネントがemitした値 -->
-    <Memo
-      v-for="data in $store.state.memoData"
-      :key="data.id"
-      :data="data"
-      @start="dragStart($event, data.id)"
-    />
-
-    <AddBtn @add="$store.commit('addMemo')"/>
-  </div>
 </template>
 
 <script>
-import Memo from '~/components/Memo';
-import AddBtn from '~/components/AddBtn'; 
+import bJumbotron from 'bootstrap-vue/es/components/jumbotron/jumbotron'
+import newRoom from '~/components/newRoom'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
-  components: {
-    Memo,
-    AddBtn,
+    components: {
+        bJumbotron,
+        newRoom
+    },
+    created() {
+      //mounted()とのタイミングの違いを調べる
+     // メモが1枚も無いなら＋ボタンを押すのと同じメソッドを呼んで生成
+    Promise.resolve()
+    .then( () => this.bindRoomList())
+
+    Promise.resolve()
+    .then( () => this.bindLastRoom())
+    .then( () => { if(!this.$store.state.lastRoom.roomId) {
+                      this.updateLastRoomId(1)
+                    }
+                })
+    
+    Promise.resolve()
+    .then( () => this.bindMemoData())
+
+    // this.bindColorList()
+    
   },
-  data() {
-    // このコンポーネントでしか使わない値や、storeに保存するほどでもない値はdataを使う
-    return {
-      draggingId: null, // targetId から名称変更、永続化する意味がないのでstoreに保存しないことにした
-      prevX: null,
-      prevY: null,
-    };
+    destroyed() {
+    this.unBindMemoData()
+    // this.unBindColorList()
+    this.unBindRoomList()
+    this.unBindLastRoom()
   },
-  mounted() {
-    // メモが1枚も無いなら＋ボタンを押すのと同じメソッドを呼んで生成
-    if (this.$store.state.memoData.length === 0) {
-      this.$store.commit('addMemo');
-    }
-  },
+
+
   methods: {
-    dragStart(e, id) {
-      this.draggingId = id;
+    ...mapActions({
+      bindMemoData: 'bindMemoData',
+      bindColorList: 'bindColorList',
+      bindRoomList: 'bindRoomList',
+      bindLastRoom: 'bindLastRoom',
 
-      // startの度にマウス位置を初期化するとonMoveの処理がすっきり書けることに気付いた
-      this.prevX = e.pageX;
-      this.prevY = e.pageY;
-    },
-    dragEnd() {
-      this.draggingId = null;
-    },
-    onMove(e) {
-      const { draggingId } = this; // const draggingId = this.draggingId; と同じ
-      if (draggingId === null) return;
+      unBindMemoData: 'unBindMemoData',
+      unBindColorList: 'unBindColorList',
+      unBindRoomList: 'unBindRoomList',
+      unBindLastRoom: 'unBindLastRoom',
+      addRoom: 'addRoom',
+      updateLastRoomId: 'updateLastRoomId',
 
-      const x = e.pageX;
-      const y = e.pageY;
-      const targetMemo = {
-        // store/index.jsのgetters.getMemoByIdを参照
-        // 重要なのはここの使い方、computedに似ているかも
-        // storeにdraggingIdを渡す⇒該当するメモを計算して返してもらう
-        // ...スプレッド演算子で連想配列のコピーを作る
-        ...this.$store.getters.getMemoById(draggingId),
-      };
-
-      // 現在のマウス位置から直前(prev)のマウス位置を引いた差分
-      targetMemo.left += x - this.prevX;
-      targetMemo.top += y - this.prevY;
-
-      this.prevX = x;
-      this.prevY = y;
-
-      this.$store.commit('updateMemo', targetMemo);
-    },
-  },
+    })
 }
+}
+
 </script>
 
 <style scoped>
-.container {
-  user-select: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: center/cover url('~/assets/bricks.jpg');
+
+.background {
+    background: center/cover url('~/assets/bg.png');
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+}
+
+.title {
+    position: fixed;
+    left: 4%;
+    top: 80%;
+    color: whitesmoke;
+}
+
+.logo{
+    margin-right: 24px;
+    font-size: 4.6rem;
+    color: rgba(245, 245, 245, 0.886);
+}
+
+.title-text {
+    font-size: 5.5rem;
+    letter-spacing: 0.2rem;
+    font-weight: bold;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+.input{
+    position: fixed;
+    top: 45%;
+    left: 35.3%;
 }
 </style>

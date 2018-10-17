@@ -4,11 +4,11 @@
 
 <script>
 export default {
-  props: ['text'],
+  props: ['text', 'roomId', 'id'],
   methods: {
     onInput(e) {
       // 連想配列にせず直接文字を送るように少々書き換えた
-      this.$emit('input', e.target.value);
+      this.$emit('input', this.roomId, this.id, e.target.value);
     },
   },
 }
